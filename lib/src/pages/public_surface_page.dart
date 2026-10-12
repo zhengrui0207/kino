@@ -162,12 +162,7 @@ class _PublicSurfacePageState extends State<PublicSurfacePage> {
   }
 
   void _openDownload() {
-    final width = MediaQuery.sizeOf(context).width;
-    final environment = ClientEnvironment(
-      isWindows: widget.environment.isWindows,
-      isNarrow: widget.environment.isNarrow || width <= 960,
-      zoomAnomaly: widget.environment.zoomAnomaly,
-    );
+    final environment = _liveEnvironment;
     showDialog<void>(
       context: context,
       builder: (_) => DownloadDialog(environment: environment),
@@ -176,7 +171,10 @@ class _PublicSurfacePageState extends State<PublicSurfacePage> {
 
   void _clearIntent() {
     _store.clear();
-    setState(() => _intent = null);
+    setState(() {
+      _intent = null;
+      _mockNote = false;
+    });
     final replace = widget.onReplaceUrl;
     if (replace == null) return;
     final path = widget.launch.path.isEmpty ? '/' : widget.launch.path;
@@ -187,16 +185,20 @@ class _PublicSurfacePageState extends State<PublicSurfacePage> {
 
   bool get _wide => MediaQuery.sizeOf(context).width > 960;
 
-  bool get _showBrowserBanner {
-    final narrow = MediaQuery.sizeOf(context).width <= 960;
-    return !widget.environment.isWindows ||
-        widget.environment.isNarrow ||
-        narrow;
+  ClientEnvironment get _liveEnvironment {
+    final narrow =
+        widget.environment.isNarrow || MediaQuery.sizeOf(context).width <= 960;
+    return ClientEnvironment(
+      isWindows: widget.environment.isWindows,
+      isNarrow: narrow,
+      zoomAnomaly: widget.environment.zoomAnomaly,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = kinoColorsOf(context);
+    final environment = _liveEnvironment;
     final links = SurfaceLinks(
       wide: _wide,
       openLogin: _openLogin,
@@ -220,14 +222,14 @@ class _PublicSurfacePageState extends State<PublicSurfacePage> {
                   text:
                       '检测到非 100% 显示缩放或 DPR 异常，桌面端布局可能错位。建议系统显示缩放设为 100% 后刷新。（现网 meta：user-scalable=no，偏向桌面固定逻辑像素）',
                 ),
-              if (_showBrowserBanner)
+              if (environment.showBrowserBanner)
                 _Banner(
                   key: const Key('banner-narrow'),
                   color: colors.infoBg,
                   ink: colors.infoInk,
-                  tag: '窄屏 / 非 Windows',
+                  tag: environment.downloadBlockReason,
                   text:
-                      '本产品 Desktop-first。客户端下载仅支持 Windows（非主 CTA）；当前环境请直接使用浏览器 Web，勿依赖客户端安装包。',
+                      '本产品 Desktop-first。客户端下载仅支持 Windows（非主 CTA）。当前原因：${environment.downloadBlockReason}。请直接使用浏览器 Web，勿依赖客户端安装包。',
                 ),
               _Header(
                 wide: _wide,

@@ -2,7 +2,23 @@ import 'package:flutter/material.dart';
 
 import '../theme.dart';
 
-enum KinoButtonVariant { primary, dark, soft, ghost, tertiary }
+enum KinoButtonVariant { primary, secondary, dark, soft, ghost, tertiary }
+
+/// Hero CTA rank. Higher is louder: 流程 (primary) > 登录 (secondary) > 下载 (tertiary).
+int ctaWeight(KinoButtonVariant variant) {
+  switch (variant) {
+    case KinoButtonVariant.primary:
+      return 3;
+    case KinoButtonVariant.secondary:
+      return 2;
+    case KinoButtonVariant.dark:
+    case KinoButtonVariant.soft:
+      return 2;
+    case KinoButtonVariant.ghost:
+    case KinoButtonVariant.tertiary:
+      return 1;
+  }
+}
 
 class KinoButton extends StatelessWidget {
   const KinoButton({
@@ -41,6 +57,10 @@ class KinoButton extends StatelessWidget {
             offset: const Offset(0, 8),
           ),
         ];
+      case KinoButtonVariant.secondary:
+        bg = colors.bgElev;
+        fg = colors.brandDeep;
+        border = Border.all(color: colors.brand);
       case KinoButtonVariant.dark:
         bg = colors.ink;
         fg = colors.bg;

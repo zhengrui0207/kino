@@ -234,12 +234,13 @@ class HomeHero extends StatelessWidget {
             KinoButton(
               key: const Key('btn-flow'),
               label: '查看生产流程',
-              variant: KinoButtonVariant.dark,
+              variant: KinoButtonVariant.primary,
               onPressed: () => links.scrollTo('get-started'),
             ),
             KinoButton(
               key: const Key('btn-login-hero'),
               label: '登录后开剪',
+              variant: KinoButtonVariant.secondary,
               onPressed: () => links.openLogin('登录后开剪'),
             ),
             KinoButton(
@@ -559,7 +560,7 @@ class FlowSection extends StatelessWidget {
                         border: Border.all(color: colors.line),
                       ),
                       child: Text(
-                        '自动化创作 · 敬请期待',
+                        '自动化创作 · 敬请期待 · 时间待定',
                         style: TextStyle(
                           color: colors.ink3,
                           fontSize: 13,

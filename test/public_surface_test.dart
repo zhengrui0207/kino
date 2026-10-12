@@ -44,11 +44,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('选剧，开剪。'), findsOneWidget);
-    expect(find.byKey(const Key('btn-flow')), findsOneWidget);
-    expect(find.byKey(const Key('btn-login-hero')), findsOneWidget);
+    final flow = tester.widget<KinoButton>(find.byKey(const Key('btn-flow')));
+    final login = tester.widget<KinoButton>(find.byKey(const Key('btn-login-hero')));
     final download = tester.widget<KinoButton>(find.byKey(const Key('btn-download')));
+    expect(flow.label, '查看生产流程');
+    expect(flow.variant, KinoButtonVariant.primary);
+    expect(login.label, '登录后开剪');
+    expect(login.variant, KinoButtonVariant.secondary);
     expect(download.label, '下载客户端（仅 Windows）');
+    expect(download.variant, KinoButtonVariant.tertiary);
     expect(download.label, isNot(contains('推荐')));
+    expect(ctaWeight(flow.variant), greaterThan(ctaWeight(login.variant)));
+    expect(ctaWeight(login.variant), greaterThan(ctaWeight(download.variant)));
     expect(find.text('产品流程'), findsWidgets);
     expect(find.text('能力与 Demo'), findsOneWidget);
     expect(find.text('术语说明'), findsWidgets);
@@ -58,6 +65,7 @@ void main() {
     expect(find.text('快速开始 · 生产循环'), findsOneWidget);
     expect(find.text('挑爆款'), findsWidgets);
     expect(find.text('数据反馈（尚未接入）'), findsOneWidget);
+    expect(find.text('自动化创作 · 敬请期待 · 时间待定'), findsOneWidget);
     expect(find.textContaining('投放数据反馈尚未接入'), findsWidgets);
     expect(find.textContaining('从成片库下载后独立分发与测投'), findsOneWidget);
     expect(find.textContaining('Path A · 智能切片测投'), findsOneWidget);
@@ -211,11 +219,20 @@ void main() {
       environment: const ClientEnvironment(isWindows: false),
     );
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('banner-narrow')), findsOneWidget);
+    final banner = find.byKey(const Key('banner-narrow'));
+    expect(banner, findsOneWidget);
+    expect(
+      find.descendant(of: banner, matching: find.textContaining('非 Windows')),
+      findsWidgets,
+    );
+    expect(
+      find.descendant(of: banner, matching: find.textContaining('窄屏')),
+      findsNothing,
+    );
 
     await tester.tap(find.byKey(const Key('btn-download')));
     await tester.pumpAndSettle();
-    expect(find.textContaining('非 Windows 系统'), findsOneWidget);
+    expect(find.textContaining('非 Windows 系统'), findsWidgets);
     expect(find.textContaining('请使用浏览器访问 Web'), findsOneWidget);
     final disabled = tester.widget<KinoButton>(find.byKey(const Key('dl-disabled')));
     expect(disabled.onPressed, isNull);
@@ -239,6 +256,27 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('不触发真实下载'), findsOneWidget);
     expect(find.textContaining('kino_mash_app 0.5.1'), findsWidgets);
+  });
+
+  testWidgets('US-06 Windows narrow banner names the narrow reason only', (
+    tester,
+  ) async {
+    await pumpPublic(
+      tester,
+      environment: const ClientEnvironment(isWindows: true, isNarrow: true),
+      size: const Size(1280, 900),
+    );
+    await tester.pumpAndSettle();
+    final banner = find.byKey(const Key('banner-narrow'));
+    expect(banner, findsOneWidget);
+    expect(
+      find.descendant(of: banner, matching: find.textContaining('窄屏/非桌面宽度')),
+      findsWidgets,
+    );
+    expect(
+      find.descendant(of: banner, matching: find.textContaining('非 Windows')),
+      findsNothing,
+    );
   });
 
   testWidgets('US-07 contact form accepts input and reports empty submit', (
@@ -294,6 +332,7 @@ void main() {
     await tester.tap(find.byKey(const Key('intent-clear')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('intent-bar')), findsNothing);
+    expect(find.byKey(const Key('mock-session-note')), findsNothing);
     expect(replaced, isNotEmpty);
     expect(replaced.last, isNot(contains('intent=')));
   });
